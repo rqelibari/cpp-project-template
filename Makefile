@@ -14,7 +14,17 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+###############################################################################
+# Idea                                                                        #
+###############################################################################
 # This makefile is the entry point for all sub projects makefile. It
 # provides the tasks which are required by all subprojects (e.g. building)
 # googlemock. It further has a target which offers a build of the sub
 # projects, but depends on naming conventions.
+
+###############################################################################
+# Variables                                                                   #
+###############################################################################
+# Info: ':=' means expand variables on definition
+# Get the directory, where this makefile is located
+ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
