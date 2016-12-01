@@ -34,15 +34,22 @@ DEBUG := yes
 
 # >> Compiler variables
 #######################################
-export CXX = /usr/bin/g++
+CXX = /usr/bin/g++
 CXXFLAGS = -std=c++14
 ifeq ($(CXX), yes)
 	CXXFLAGS += -g -Wall -DDEBUG
 else
 	CXXFLAGS += -O3
 endif
-export CXXFLAGS
 
+# >> Dependency variables
+#######################################
+# Taken from: http://make.mad-scientist.net/papers/advanced-auto-dependency-generation/#combine
+DEPDIR := .d
+$(shell mkdir -p $(DEPDIR) > /dev/null)
+DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
+CXXFLAGS += $(DEPFLAGS)
+POSTCOMPILE = mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
 
 # >> Template variables
 #######################################
@@ -76,3 +83,8 @@ OBJECTS_TMP = $(addsuffix .o, $(basename $(filter-out %Main.cpp, $(wildcard $(1)
 # Link every test with its right corresponding object and make it dependfile
 HEADERS_TMP = $(1)/$(2).h
 OBJECTS_TESTS_TMP = $(addsuffix .o, $(1)/$(2))
+
+###############################################################################
+# Configuration                                                               #
+###############################################################################
+.PRECIOUS: $(DEPDIR)/%.d
