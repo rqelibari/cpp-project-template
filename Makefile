@@ -26,9 +26,26 @@
 # Variables                                                                   #
 ###############################################################################
 # Info: ':=' means expand variables on definition
+# >> General variables
+#######################################
 # Get the directory, where this makefile is located
 ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+DEBUG := yes
 
+# >> Compiler variables
+#######################################
+export CXX = /usr/bin/g++
+CXXFLAGS = -std=c++14
+ifeq ($(CXX), yes)
+	CXXFLAGS += -g -Wall -DDEBUG
+else
+	CXXFLAGS += -O3
+endif
+export CXXFLAGS
+
+
+# >> Template variables
+#######################################
 # This makefile offers a standard build target for projects located in
 # subfolders. To achieve this it assumes the following project structure.
 #
@@ -56,6 +73,6 @@ TEST_BINARIES_TMP = $(basename $(wildcard $(1)/tests/*.cpp))
 # Get header files to recompile, when those change.
 HEADERS_TMP = $(wildcard $(1)/*.h)
 OBJECTS_TMP = $(addsuffix .o, $(basename $(filter-out %Main.cpp, $(wildcard $(1)/*.cpp))))
-# Link every test with its right corresponding object file
+# Link every test with its right corresponding object and make it dependfile
 HEADERS_TMP = $(1)/$(2).h
 OBJECTS_TESTS_TMP = $(addsuffix .o, $(1)/$(2))
