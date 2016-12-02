@@ -46,7 +46,6 @@ endif
 #######################################
 # Taken from: http://make.mad-scientist.net/papers/advanced-auto-dependency-generation/#combine
 DEPDIR := .d
-$(shell mkdir -p $(DEPDIR) > /dev/null)
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 CXXFLAGS += $(DEPFLAGS)
 POSTCOMPILE = mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
@@ -88,3 +87,10 @@ OBJECTS_TESTS_TMP = $(addsuffix .o, $(1)/$(2))
 # Configuration                                                               #
 ###############################################################################
 .PRECIOUS: $(DEPDIR)/%.d
+
+###############################################################################
+# Targets                                                                     #
+###############################################################################
+
+$(DEPDIR)/%.d:
+	@mkdir -p $(@D) > /dev/null
