@@ -47,17 +47,7 @@ endif
 ifeq ($(words $(MAKECMDGOALS)), 2)
 ifeq ($(lastword $(MAKECMDGOALS)), sb)
 PROJECT := $(firstword $(MAKECMDGOALS))
-# >> Dependency variables
-#######################################
-# Taken from: http://make.mad-scientist.net/papers/advanced-auto-dependency-generation/#combine
-DEPDIR := $(PROJECT)/.d
-# Make dep dir
-$(shell mkdir -p $(DEPDIR) >/dev/null)
-
-DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$(subst /,_,$*).Td
-POSTCOMPILE = mv -f $(DEPDIR)/$(subst /,_,$*).Td $(DEPDIR)/$(subst /,_,$*).d
-
-# >> Template variables
+# >> Project folder structure
 #######################################
 # This makefile offers a standard build target for projects located in
 # subfolders. To achieve this it assumes the following project structure.
@@ -67,6 +57,7 @@ POSTCOMPILE = mv -f $(DEPDIR)/$(subst /,_,$*).Td $(DEPDIR)/$(subst /,_,$*).d
 # ├── Makefile  # this is the current makefile
 # ├── README.md
 # └── project1  # a project
+#     ├── .d    # automatic generated dependency files
 #     ├── build
 #     ├── lib  # for third party libraries
 #     ├── src
@@ -79,6 +70,23 @@ POSTCOMPILE = mv -f $(DEPDIR)/$(subst /,_,$*).Td $(DEPDIR)/$(subst /,_,$*).d
 #                                      # suite. It will be linked with
 #                                      # src/FuzzySearch.cpp
 #
+BUILD_DIR = $(PROJECT)/build
+LIB_DIR = $(PROJECT)/lib
+SRC_DIR = $(PROJECT)/src
+TESTS_DIR = $(PROJECT)/tests
+
+# >> Dependency variables
+#######################################
+# Taken from: http://make.mad-scientist.net/papers/advanced-auto-dependency-generation/#combine
+DEPDIR := $(PROJECT)/.d
+# Make dep dir
+$(shell mkdir -p $(DEPDIR) >/dev/null)
+
+DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$(subst /,_,$*).Td
+POSTCOMPILE = mv -f $(DEPDIR)/$(subst /,_,$*).Td $(DEPDIR)/$(subst /,_,$*).d
+
+# >> Template variables
+#######################################
 # Define template variables for using as prerequisites to targets:
 # 1. Get main files as those will produce a binary later
 MAIN_BINARIES_TMP = $(basename $(wildcard $(1)/*Main.cpp))
