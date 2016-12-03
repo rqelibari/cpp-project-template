@@ -36,7 +36,7 @@ DEBUG := yes
 #######################################
 CXX = /usr/bin/g++
 CXXFLAGS = -std=c++14
-ifeq ($(CXX), yes)
+ifeq ($(DEBUG), yes)
 	CXXFLAGS += -g -Wall -DDEBUG
 else
 	CXXFLAGS += -O3
