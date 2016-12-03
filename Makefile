@@ -42,10 +42,18 @@ else
 	CXXFLAGS += -O3
 endif
 
+# Define those variables only when invocation on command line looks like:
+# > make project sb
+ifeq ($(words $(MAKECMDGOALS)), 2)
+ifeq ($(lastword $(MAKECMDGOALS)), sb)
+PROJECT := $(firstword $(MAKECMDGOALS))
 # >> Dependency variables
 #######################################
 # Taken from: http://make.mad-scientist.net/papers/advanced-auto-dependency-generation/#combine
-DEPDIR := .d
+DEPDIR := $(PROJECT)/.d
+# Make dep dir
+$(shell mkdir -p $(DEPDIR) >/dev/null)
+
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 CXXFLAGS += $(DEPFLAGS)
 POSTCOMPILE = mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
@@ -73,15 +81,9 @@ POSTCOMPILE = mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
 #                                      # src/FuzzySearch.cpp
 #
 # Define template variables for using as prerequisites to targets:
-# 1. Get main files and tests, as those will produce a binary later
+# 1. Get main files as those will produce a binary later
 MAIN_BINARIES_TMP = $(basename $(wildcard $(1)/*Main.cpp))
-TEST_BINARIES_TMP = $(basename $(wildcard $(1)/tests/*.cpp))
-# Get header files to recompile, when those change.
-HEADERS_TMP = $(wildcard $(1)/*.h)
-OBJECTS_TMP = $(addsuffix .o, $(basename $(filter-out %Main.cpp, $(wildcard $(1)/*.cpp))))
-# Link every test with its right corresponding object and make it dependfile
-HEADERS_TMP = $(1)/$(2).h
-OBJECTS_TESTS_TMP = $(addsuffix .o, $(1)/$(2))
+SRCS = $(filter-out %Main.cpp, $(wildcard $(PROJECT)/src/*.cpp))
 
 ###############################################################################
 # Configuration                                                               #
@@ -92,5 +94,7 @@ OBJECTS_TESTS_TMP = $(addsuffix .o, $(1)/$(2))
 # Targets                                                                     #
 ###############################################################################
 
-$(DEPDIR)/%.d:
-	@mkdir -p $(@D) > /dev/null
+$(DEPDIR)/%.d: ;
+
+endif
+endif
