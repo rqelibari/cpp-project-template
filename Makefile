@@ -28,19 +28,23 @@
 # Info: ':=' means expand variables on definition
 # >> General variables
 #######################################
+# Set variable according to:
+# https://www.gnu.org/software/make/manual/html_node/Makefile-Basics.html
+SHELL = /bin/sh
 # Get the directory, where this makefile is located
 ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 DEBUG := yes
 
 # >> Compiler variables
 #######################################
-CXX = /usr/bin/g++
 CXXFLAGS = -std=c++14
 ifeq ($(DEBUG), yes)
 	CXXFLAGS += -g -Wall -DDEBUG
 else
 	CXXFLAGS += -O3
 endif
+
+COMPILECPP = $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(TARGET_ARCH)
 
 # Define those variables only when invocation on command line looks like:
 # > make project sb
@@ -88,8 +92,6 @@ $(shell mkdir -p $(DEPDIR) >/dev/null)
 
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$(subst /,_,$*).Td
 POSTCOMPILE = mv -f $(DEPDIR)/$(subst /,_,$*).Td $(DEPDIR)/$(subst /,_,$*).d
-
-COMPILECPP = $(CXX) $(CXXFLAGS)
 
 # >> Template variables
 #######################################
