@@ -85,6 +85,8 @@ $(shell mkdir -p $(DEPDIR) >/dev/null)
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$(subst /,_,$*).Td
 POSTCOMPILE = mv -f $(DEPDIR)/$(subst /,_,$*).Td $(DEPDIR)/$(subst /,_,$*).d
 
+COMPILECPP = $(CXX) $(CXXFLAGS)
+
 # >> Template variables
 #######################################
 # Define template variables for using as prerequisites to targets:
@@ -95,13 +97,30 @@ SRCS = $(filter-out %Main.cpp, $(wildcard $(PROJECT)/src/*.cpp))
 ###############################################################################
 # Configuration                                                               #
 ###############################################################################
-.PRECIOUS: $(DEPDIR)/%.d
+.PRECIOUS: $(DEPDIR)/%.d %Main %.o
+.SECONDEXPANSION:
 
 ###############################################################################
 # Targets                                                                     #
 ###############################################################################
+$(PROJECT): $(MAIN_BINARIES)
+$(lastword $(MAKECMDGOALS)):
+	@echo "Standard build done."
+
+# >> Standard build targets
+#######################################
+%Main: $$(subst build,src,$$(addsuffix .o, $$@)) $(SRCS:.cpp=.o)
+	@echo "matched " $^
+	@$(COMPILECPP) -o $@ $^
+
+%.o: %.cpp
+%.o: %.cpp $(DEPDIR)/$$(subst /,_,$$*).d
+	@echo "Compiling " $<
+	@$(COMPILECPP) -c -o $@ $(DEPFLAGS) $<
+	@$(POSTCOMPILE)
 
 $(DEPDIR)/%.d: ;
 
+-include $(patsubst %,$(DEPDIR)/$(subst /,_,$*).d,$(basename $(SRCS)))
 endif
 endif
