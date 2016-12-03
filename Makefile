@@ -54,9 +54,8 @@ DEPDIR := $(PROJECT)/.d
 # Make dep dir
 $(shell mkdir -p $(DEPDIR) >/dev/null)
 
-DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
-CXXFLAGS += $(DEPFLAGS)
-POSTCOMPILE = mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
+DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$(subst /,_,$*).Td
+POSTCOMPILE = mv -f $(DEPDIR)/$(subst /,_,$*).Td $(DEPDIR)/$(subst /,_,$*).d
 
 # >> Template variables
 #######################################
