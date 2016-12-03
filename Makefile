@@ -47,6 +47,7 @@ endif
 ifeq ($(words $(MAKECMDGOALS)), 2)
 ifeq ($(lastword $(MAKECMDGOALS)), sb)
 PROJECT := $(firstword $(MAKECMDGOALS))
+
 # >> Project folder structure
 #######################################
 # This makefile offers a standard build target for projects located in
@@ -97,7 +98,7 @@ SRCS = $(filter-out %Main.cpp, $(wildcard $(PROJECT)/src/*.cpp))
 ###############################################################################
 # Configuration                                                               #
 ###############################################################################
-.PRECIOUS: $(DEPDIR)/%.d %Main %.o
+.PRECIOUS: $(DEPDIR)/%.d %.o
 .SECONDEXPANSION:
 
 ###############################################################################
@@ -110,6 +111,7 @@ $(lastword $(MAKECMDGOALS)):
 # >> Standard build targets
 #######################################
 %Main: $$(subst build,src,$$(addsuffix .o, $$@)) $(SRCS:.cpp=.o)
+	@echo "Linking binary: " $(@F)
 	@$(COMPILECPP) -o $@ $^
 
 %.o: %.cpp
