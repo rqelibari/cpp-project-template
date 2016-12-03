@@ -98,12 +98,13 @@ POSTCOMPILE = mv -f $(DEPDIR)/$(subst /,_,$*).Td $(DEPDIR)/$(subst /,_,$*).d
 # Define template variables for using as prerequisites to targets:
 # 1. Get main files as those will produce a binary later
 MAIN_BINARIES := $(subst $(SRC_DIR),$(BUILD_DIR),$(basename $(wildcard $(SRC_DIR)/*Main.cpp)))
-SRCS = $(filter-out %Main.cpp, $(wildcard $(PROJECT)/src/*.cpp))
+SRCS = $(filter-out %Main.cpp, $(wildcard $(SRC_DIR)/*.cpp))
 
 ###############################################################################
 # Configuration                                                               #
 ###############################################################################
 .PRECIOUS: $(DEPDIR)/%.d %.o
+.PHONY: $(PROJECT) sbuild sclean
 .SECONDEXPANSION:
 
 ###############################################################################
