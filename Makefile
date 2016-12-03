@@ -110,12 +110,11 @@ $(lastword $(MAKECMDGOALS)):
 # >> Standard build targets
 #######################################
 %Main: $$(subst build,src,$$(addsuffix .o, $$@)) $(SRCS:.cpp=.o)
-	@echo "matched " $^
 	@$(COMPILECPP) -o $@ $^
 
 %.o: %.cpp
 %.o: %.cpp $(DEPDIR)/$$(subst /,_,$$*).d
-	@echo "Compiling " $<
+	@echo ">> Compiling " $<
 	@$(COMPILECPP) -c -o $@ $(DEPFLAGS) $<
 	@$(POSTCOMPILE)
 
