@@ -45,8 +45,8 @@ endif
 # Define those variables only when invocation on command line looks like:
 # > make project sb
 ifeq ($(words $(MAKECMDGOALS)), 2)
-ifeq ($(lastword $(MAKECMDGOALS)), sb)
 PROJECT := $(firstword $(MAKECMDGOALS))
+CMD = $(lastword $(MAKECMDGOALS))
 
 # >> Project folder structure
 #######################################
@@ -75,6 +75,9 @@ BUILD_DIR = $(PROJECT)/build
 LIB_DIR = $(PROJECT)/lib
 SRC_DIR = $(PROJECT)/src
 TESTS_DIR = $(PROJECT)/tests
+
+# Standard build
+ifeq ($(CMD), sb)
 
 # >> Dependency variables
 #######################################
@@ -123,5 +126,19 @@ $(lastword $(MAKECMDGOALS)):
 $(DEPDIR)/%.d: ;
 
 -include $(patsubst %,$(DEPDIR)/$(subst /,_,$*).d,$(basename $(SRCS)))
+endif
+# Standard clean
+ifeq ($(CMD), sc)
+###############################################################################
+# Targets                                                                     #
+###############################################################################
+$(PROJECT): clean
+$(lastword $(MAKECMDGOALS)):
+	@echo "Standard clean done."
+
+clean:
+	@echo "Cleaning project..."
+	@rm -f $(SRC_DIR)/*.o
+	@rm -f $(BUILD_DIR)/*
 endif
 endif
