@@ -109,9 +109,17 @@ SRCS = $(filter-out %Main.cpp, $(wildcard $(PROJECT)/src/*.cpp))
 ###############################################################################
 # Targets                                                                     #
 ###############################################################################
-$(PROJECT): $(MAIN_BINARIES)
-$(lastword $(MAKECMDGOALS)):
-	@echo "Standard build done."
+$(PROJECT):
+	@echo "Calling standard targets."
+
+sbuild: $(MAIN_BINARIES)
+
+# >> Standard clean target
+#######################################
+sclean:
+	@echo "Cleaning project..."
+	@rm -f $(SRC_DIR)/*.o
+	@rm -f $(BUILD_DIR)/*
 
 # >> Standard build targets
 #######################################
@@ -128,19 +136,5 @@ $(lastword $(MAKECMDGOALS)):
 $(DEPDIR)/%.d: ;
 
 -include $(patsubst %,$(DEPDIR)/$(subst /,_,$*).d,$(basename $(SRCS)))
-endif
-# Standard clean
-ifeq ($(CMD), sc)
-###############################################################################
-# Targets                                                                     #
-###############################################################################
-$(PROJECT): clean
-$(lastword $(MAKECMDGOALS)):
-	@echo "Standard clean done."
-
-clean:
-	@echo "Cleaning project..."
-	@rm -f $(SRC_DIR)/*.o
-	@rm -f $(BUILD_DIR)/*
 endif
 endif
