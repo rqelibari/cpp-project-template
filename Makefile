@@ -59,29 +59,28 @@ CMD = $(lastword $(MAKECMDGOALS))
 #
 # .
 # ├── LICENSE
-# ├── Makefile  # this is the current makefile
+# ├── Makefile  # -> this is the current makefile
 # ├── README.md
-# └── project1  # a project
-#     ├── .d    # automatic generated dependency files
-#     ├── build
-#     ├── lib  # for third party libraries
-#     ├── src
+# └── project1  # -> a project
+#     ├── .d    # -> automatic generated dependency files
+#     ├── bin   # -> this is where the final binary will be places
+#     ├── build # -> this is where the build will happen
+#     ├── lib   # -> this directory is for third party libraries
+#     ├── src   # -> this is where your source is located
 #     │   ├── FuzzyFileSearch.cpp
 #     │   ├── FuzzyFileSearch.h
-#     │   └── FuzzyFileSearchMain.cpp  # files ending with Main.cpp will later
-#     │                                # produce an executable
-#     └── tests
-#         └── FuzzyFileSearch.cpp      # This file contains a googlemock test
-#                                      # suite. It will be linked with
+#     │   └── FuzzyFileSearchMain.cpp  # -> files ending with Main.cpp will
+#     │                                # later produce an executable
+#     └── tests # -> here you can your tests
+#         └── FuzzyFileSearch.cpp      #  -> This file contains a googlemock
+#									   # test suite. It will be linked with
 #                                      # src/FuzzySearch.cpp
 #
+BIN_DIR = $(PROJECT)/bin
 BUILD_DIR = $(PROJECT)/build
 LIB_DIR = $(PROJECT)/lib
 SRC_DIR = $(PROJECT)/src
 TESTS_DIR = $(PROJECT)/tests
-
-# Standard build
-ifeq ($(CMD), sb)
 
 # >> Dependency variables
 #######################################
@@ -137,5 +136,4 @@ sclean:
 $(DEPDIR)/%.d: ;
 
 -include $(patsubst %,$(DEPDIR)/$(subst /,_,$*).d,$(basename $(SRCS)))
-endif
 endif
