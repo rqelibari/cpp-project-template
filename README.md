@@ -1,5 +1,5 @@
 # C++ Project Template
-A default project layout for C++ projects, which runs tests with Googlemock.
+A default project Makefile for C++ projects, which runs tests with Googlemock.
 
 ## What is included?
 This project template for C++ includes a Makefile which takes care of usual
@@ -38,3 +38,13 @@ The following targets are offered:
 
 **Alternatively**: You can add this repo as a submodule to your existing
 repository and than symlink the toplevel Makefile to this one.
+
+## Good to know:
+- This Makefile uses special features of GNUMake in favor of writing less code.
+
+- This Makefile disables make buil-in rules (see [documentation][3]). With that
+it optimizez the runtime up to 33% (for more details see
+[this experiment][2]).
+
+[2]: http://electric-cloud.com/blog/2009/08/makefile-performance-built-in-rules/
+[3]: https://www.gnu.org/software/make/manual/html_node/Catalogue-of-Rules.html#Catalogue-of-Rules
