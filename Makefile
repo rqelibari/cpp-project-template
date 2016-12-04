@@ -195,6 +195,8 @@ gmocklib: init-submodules $(GMOCK_OBJECTS)
 	@echo "Bundle to library..."
 	@mkdir -p $(dir $(GMOCK_LIB))
 	@ar -rv $(GMOCK_LIB) $(GMOCK_OBJECTS)
+	@$(MAKE) -C $(GMOCK_DIR)/make clean
+	@$(MAKE) -C $(GTEST_DIR)/make clean
 
 $(GMOCK_OBJECTS):
 	@echo "Compiling " $(notdir $@) "..."
