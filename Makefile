@@ -1,6 +1,6 @@
 #  Fuzzy Search - Main GNUMake file
 #  ====
-#  Copyright 2016 Rezart Qelibari <qelibarr@informatik.uni-freiburg.de>
+#  Copyright 2016 Rezart Qelibari <rezart.q-github@gmail.com>
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
