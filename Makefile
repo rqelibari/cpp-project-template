@@ -51,6 +51,7 @@ COMPILECPP = $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(TARGET_ARCH)
 # > make project sb
 ifeq ($(words $(MAKECMDGOALS)), 2)
 PROJECT := $(firstword $(MAKECMDGOALS))
+PROJECT_MAKEFILE := $(wildcard $(PROJECT)/Makefile)
 CMD = $(lastword $(MAKECMDGOALS))
 
 # >> Project folder structure
@@ -63,6 +64,7 @@ CMD = $(lastword $(MAKECMDGOALS))
 # ├── Makefile  # -> this is the current makefile
 # ├── README.md
 # └── project1  # -> a project
+#     ├── Makefile    # -> this is a project specific Makefile
 #     ├── .d    # -> automatic generated dependency files
 #     ├── bin   # -> this is where the final binary will be places
 #     ├── build # -> this is where the build will happen
@@ -114,9 +116,22 @@ MAKEFLAGS += --no-builtin-rules
 ###############################################################################
 # Targets                                                                     #
 ###############################################################################
+ifeq ($(filter sbuild sclean, $(CMD)),)
+ifneq ($(PROJECT_MAKEFILE),)
+$(PROJECT):
+	@echo "Delegating to project Makefile."
+
+.DEFAULT: $(MAKE) -C $(PROJECT) $(CMD)
+else
+    $(error "Error: Project does not have a Makefile.")
+endif
+else
 $(PROJECT):
 	@echo "Calling standard targets."
+endif
 
+# >> Standard clean target
+#######################################
 sbuild: $(MAIN_BINARIES)
 
 # >> Standard clean target
