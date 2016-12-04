@@ -49,7 +49,10 @@ COMPILECPP = $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(TARGET_ARCH)
 
 # >> Googletest variables
 #######################################
-GMOCK_DIR := $(ROOT_DIR)/vendors/googletest/googlemock
+VENDOR_DIR := $(ROOT_DIR)/vendors
+GMOCK_REPO = https://github.com/google/googletest.git
+GMOCK_REPO_DIR := $(VENDOR_DIR)/googletest
+GMOCK_DIR := $(GMOCK_REPO_DIR)/googlemock
 GTEST_DIR := $(GMOCK_DIR)/../googletest
 export GTEST_CXX := $(COMPILECPP) -isystem $(GTEST_DIR)/include \
                     -isystem $(GMOCK_DIR)/include
@@ -203,14 +206,19 @@ ifeq ($(words $(MAKECMDGOALS)), 1)
 ###############################################################################
 # Configuration                                                               #
 ###############################################################################
-.PHONY: init init-submodules gmocklib
+.PHONY: init add-submodule init-submodules gmocklib
 
 ###############################################################################
 # Targets                                                                     #
 ###############################################################################
 init: gmocklib
 
-init-submodules:
+add-submodule:
+	@echo "Add goolge/googletest as submodule"
+	@mkdir -p $(VENDOR_DIR)
+	@[ ! -d "$(GMOCK_REPO_DIR)" ] && git submodule add $(GMOCK_REPO) "$(subst $(CURDIR)/,,$(GMOCK_REPO_DIR))" || true
+
+init-submodules: add-submodule
 	@echo "Init submodules.."
 	@git submodule update --init --recursive
 
