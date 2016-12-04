@@ -126,6 +126,10 @@ sclean:
 	@rm -f $(BIN_DIR)/*
 	@rm -f $(BUILD_DIR)/*.o
 
+sclean-all: sclean
+	@echo "Additionally cleaning dependency files..."
+	@rm -f $(DEPDIR)/*
+
 # >> Standard build targets
 #######################################
 $(BIN_DIR)/%Main: $(BUILD_DIR)/%Main.o $(OBJS)
