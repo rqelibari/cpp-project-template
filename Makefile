@@ -109,8 +109,8 @@ DEPDIR := $(PROJECT)/.d
 # Make dep dir
 $(shell mkdir -p $(DEPDIR) >/dev/null)
 
-DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$(subst /,_,$*).Td
-POSTCOMPILE = mv -f $(DEPDIR)/$(subst /,_,$*).Td $(DEPDIR)/$(subst /,_,$*).d
+DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$(@F).Td
+POSTCOMPILE = mv -f $(DEPDIR)/$(@F).Td $(DEPDIR)/$(@F).d
 
 # >> Template variables
 #######################################
@@ -120,6 +120,7 @@ MAIN_BINARIES := $(subst $(SRC_DIR),$(BIN_DIR),$(basename $(wildcard $(SRC_DIR)/
 TESTS_BINARIES := $(subst $(TESTS_DIR),$(BIN_DIR),$(basename $(wildcard $(TESTS_DIR)/*Test.cpp)))
 SRCS := $(basename $(filter-out %Main.cpp, $(wildcard $(SRC_DIR)/*.cpp)))
 OBJS := $(addsuffix .o,$(subst $(SRC_DIR),$(BUILD_DIR),$(SRCS)))
+DEPFILES := $(wildcard $(DEPDIR)/*.d)
 
 ###############################################################################
 # Configuration                                                               #
@@ -131,7 +132,7 @@ OBJS := $(addsuffix .o,$(subst $(SRC_DIR),$(BUILD_DIR),$(SRCS)))
 ###############################################################################
 # Targets                                                                     #
 ###############################################################################
-ifeq ($(filter sbuild sclean stest, $(CMD)),)
+ifeq ($(filter sbuild sclean stest sclean-all, $(CMD)),)
 ifneq ($(PROJECT_MAKEFILE),)
 $(PROJECT):
 	@echo "Delegating to project Makefile."
@@ -172,19 +173,19 @@ $(BIN_DIR)/%Test: $(BUILD_DIR)/%Test.o $$(filter $(BUILD_DIR)/$$*.o, $(OBJS))
 	@echo "Linking test binary: " $@
 	@$(GTEST_CXX) -lpthread -o $@ $^ $(GMOCK_LIB)
 
-$(BUILD_DIR)/%Test.o: $(TESTS_DIR)/%Test.cpp $(DEPDIR)/$$(subst /,_,$$*).d
+$(BUILD_DIR)/%Test.o: $(TESTS_DIR)/%Test.cpp
 	@echo ">> Compiling test binary " $<
 	@$(GTEST_CXX) -c -o $@ $(DEPFLAGS) $<
 	@$(POSTCOMPILE)
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(DEPDIR)/$$(subst /,_,$$*).d
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(DEPDIR)/$$(@F)).d
 	@echo ">> Compiling " $<
 	@$(COMPILECPP) -c -o $@ $(DEPFLAGS) $<
 	@$(POSTCOMPILE)
 
 $(DEPDIR)/%.d: ;
 
--include $(patsubst %,$(DEPDIR)/$(subst /,_,$*).d,$(SRCS))
+-include $(DEPFILES)
 endif
 
 # Targets if make is called like: 'make <target>'
