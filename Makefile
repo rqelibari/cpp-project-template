@@ -126,13 +126,15 @@ DEPFILES := $(wildcard $(DEPDIR)/*.d)
 # Configuration                                                               #
 ###############################################################################
 .PRECIOUS: $(DEPDIR)/%.d $(BUILD_DIR)/%.o $(BUILD_DIR)/%Test.o
-.PHONY: $(PROJECT) sbuild sclean
+PHONY_TARGETS := screate sbuild sclean stest sclean-all
+.PHONY: $(PROJECT) $(PHONY_TARGETS)
 .SECONDEXPANSION:
 
 ###############################################################################
 # Targets                                                                     #
 ###############################################################################
-ifeq ($(filter sbuild sclean stest sclean-all, $(CMD)),)
+# Add phony targets
+ifeq ($(filter $(PHONY_TARGETS), $(CMD)),)
 ifneq ($(PROJECT_MAKEFILE),)
 $(PROJECT):
 	@echo "Delegating to project Makefile."
@@ -148,6 +150,14 @@ endif
 
 # >> Standard targets
 #######################################
+# Create project folders according to standard build
+screate:
+	@mkdir -p $(BIN_DIR)
+	@mkdir -p $(BUILD_DIR)
+	@mkdir -p $(LIB_DIR)
+	@mkdir -p $(SRC_DIR)
+	@mkdir -p $(TESTS_DIR)
+
 sbuild: $(MAIN_BINARIES)
 stest: $(TESTS_BINARIES)
 	@for T in $(TEST_BINARIES); do ./$$T; done
