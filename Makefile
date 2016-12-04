@@ -103,6 +103,8 @@ OBJS := $(addsuffix .o,$(subst $(SRC_DIR),$(BUILD_DIR),$(SRCS)))
 ###############################################################################
 # Configuration                                                               #
 ###############################################################################
+MAKEFLAGS += --no-builtin-rules
+.SUFFIXES: .o .cpp
 .PRECIOUS: $(DEPDIR)/%.d %.o
 .PHONY: $(PROJECT) sbuild sclean
 .SECONDEXPANSION:
