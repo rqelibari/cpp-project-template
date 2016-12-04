@@ -15,3 +15,14 @@ this filter by using [metadata][2] which inherently belongs to the dataset.
 
 [1]: https://en.wikipedia.org/wiki/Information_retrieval
 [2]: https://en.wikipedia.org/wiki/Metadata
+
+## Setup
+1. Download this repo as a zip and unpack it to `REPO_DIR`. Alternatively, you
+can clone this repo to `REPO_DIR`.
+
+2. Run the followin code:
+
+```
+> cd REPO_DIR
+> make init
+```
