@@ -46,5 +46,15 @@ repository and than symlink the toplevel Makefile to this one.
 it optimizez the runtime up to 33% (for more details see
 [this experiment][2]).
 
+- This Makefile makes use of [secondexpansion][4], so that object files don't
+have to be in the same directory as the according source files.
+
+- The standard build proecedure for projects in this Makefile has automatic
+dependency generation included. It will find out by itself, which file needs to
+be updated when a file changed. This feature is inspired by the explainations
+given by Tom Tromey and written down by Paul D. Smith on his [Website][5].
+
 [2]: http://electric-cloud.com/blog/2009/08/makefile-performance-built-in-rules/
 [3]: https://www.gnu.org/software/make/manual/html_node/Catalogue-of-Rules.html#Catalogue-of-Rules
+[4]: https://www.gnu.org/software/make/manual/html_node/Secondary-Expansion.html
+[5]: http://make.mad-scientist.net/papers/advanced-auto-dependency-generation/#combine
