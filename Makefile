@@ -105,7 +105,7 @@ OBJS := $(addsuffix .o,$(subst $(SRC_DIR),$(BUILD_DIR),$(SRCS)))
 ###############################################################################
 MAKEFLAGS += --no-builtin-rules
 .SUFFIXES: .o .cpp
-.PRECIOUS: $(DEPDIR)/%.d %.o
+.PRECIOUS: $(DEPDIR)/%.d $(BUILD_DIR)/%.o
 .PHONY: $(PROJECT) sbuild sclean
 .SECONDEXPANSION:
 
@@ -121,8 +121,8 @@ sbuild: $(MAIN_BINARIES)
 #######################################
 sclean:
 	@echo "Cleaning project..."
-	@rm -f $(SRC_DIR)/*.o
-	@rm -f $(BUILD_DIR)/*
+	@rm -f $(BIN_DIR)/*
+	@rm -f $(BUILD_DIR)/*.o
 
 # >> Standard build targets
 #######################################
