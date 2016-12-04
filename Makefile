@@ -30,7 +30,7 @@
 #######################################
 # Set variable according to:
 # https://www.gnu.org/software/make/manual/html_node/Makefile-Basics.html
-SHELL = /bin/sh
+SHELL = /bin/zsh
 .SHELLFLAGS = -e
 # Get the directory, where this makefile is located
 ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
@@ -58,6 +58,11 @@ export GTEST_CXX := $(COMPILECPP) -isystem $(GTEST_DIR)/include \
                     -isystem $(GMOCK_DIR)/include
 GMOCK_OBJECTS := $(GTEST_DIR)/make/gtest-all.o $(GMOCK_DIR)/make/gmock-all.o $(GMOCK_DIR)/make/gmock_main.o
 export GMOCK_LIB = $(ROOT_DIR)/lib/libgmock.a
+
+# >> Stylecheck variables
+#######################################
+CPPLINT_REPO = "https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py"
+CPPLINT = $(ROOT_DIR)/cpplint.py
 
 ###############################################################################
 # Default configuration                                                       #
@@ -124,12 +129,14 @@ TESTS_BINARIES := $(subst $(TESTS_DIR),$(BIN_DIR),$(basename $(wildcard $(TESTS_
 SRCS := $(basename $(filter-out %Main.cpp, $(wildcard $(SRC_DIR)/*.cpp)))
 OBJS := $(addsuffix .o,$(subst $(SRC_DIR),$(BUILD_DIR),$(SRCS)))
 DEPFILES := $(wildcard $(DEPDIR)/*.d)
+# File to run checkstlye on. (N) to allow nullglobing.
+CHECKSTYLE_FILES = $(SRC_DIR)/*.h(N) $(SRC_DIR)/*.cpp(N) $(TESTS_DIR)/*.cpp(N)
 
 ###############################################################################
 # Configuration                                                               #
 ###############################################################################
 .PRECIOUS: $(DEPDIR)/%.d $(BUILD_DIR)/%.o $(BUILD_DIR)/%Test.o
-PHONY_TARGETS := screate sbuild sclean stest sclean-all
+PHONY_TARGETS := screate sbuild sclean scheckstyle stest sclean-all
 .PHONY: $(PROJECT) $(PHONY_TARGETS)
 .SECONDEXPANSION:
 
@@ -155,6 +162,7 @@ endif
 #######################################
 # Create project folders according to standard build
 screate:
+	@echo "Creating project" $(PROJECT)
 	@mkdir -p $(BIN_DIR)
 	@mkdir -p $(BUILD_DIR)
 	@mkdir -p $(LIB_DIR)
@@ -164,6 +172,11 @@ screate:
 sbuild: $(MAIN_BINARIES)
 stest: $(TESTS_BINARIES)
 	@for T in $(TEST_BINARIES); do ./$$T; done
+
+scheckstyle:
+	@echo "Run checkstyle..."$$'\n'
+	@python $(CPPLINT) --filter='-build/header_guard,-build/include' $(CHECKSTYLE_FILES)
+
 
 # >> Standard clean target
 #######################################
@@ -213,9 +226,15 @@ ifeq ($(words $(MAKECMDGOALS)), 1)
 ###############################################################################
 init: gmocklib
 
+cpplint: cpplint.py
+cpplint.py:
+	@echo "Get cpplint.py"
+	@curl -o $(CPPLINT) $(CPPLINT_REPO)
+
 add-submodule:
 	@echo "Add goolge/googletest as submodule"
 	@mkdir -p $(VENDOR_DIR)
+	@[ ! -d ".git" ] && git init || true
 	@[ ! -d "$(GMOCK_REPO_DIR)" ] && git submodule add $(GMOCK_REPO) "$(subst $(CURDIR)/,,$(GMOCK_REPO_DIR))" || true
 
 init-submodules: add-submodule
