@@ -23,7 +23,7 @@
 # projects, but depends on naming conventions.
 
 ###############################################################################
-# Variables                                                                   #
+# Default variables                                                           #
 ###############################################################################
 # Info: ':=' means expand variables on definition
 # >> General variables
@@ -35,6 +35,7 @@ SHELL = /bin/sh
 # Get the directory, where this makefile is located
 ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 DEBUG := yes
+export GMOCK_LIB = $(ROOT_DIR)/lib/libgmock.a
 
 # >> Compiler variables
 #######################################
@@ -46,6 +47,13 @@ else
 endif
 
 COMPILECPP = $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(TARGET_ARCH)
+
+###############################################################################
+# Default configuration                                                       #
+###############################################################################
+MAKEFLAGS += --no-builtin-rules
+.SUFFIXES: .o .cpp
+.ONESHELL:
 
 # Define those variables only when invocation on command line looks like:
 # > make project sb
@@ -106,12 +114,9 @@ OBJS := $(addsuffix .o,$(subst $(SRC_DIR),$(BUILD_DIR),$(SRCS)))
 ###############################################################################
 # Configuration                                                               #
 ###############################################################################
-MAKEFLAGS += --no-builtin-rules
-.SUFFIXES: .o .cpp
 .PRECIOUS: $(DEPDIR)/%.d $(BUILD_DIR)/%.o
 .PHONY: $(PROJECT) sbuild sclean
 .SECONDEXPANSION:
-.ONESHELL:
 
 ###############################################################################
 # Targets                                                                     #
@@ -159,4 +164,39 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(DEPDIR)/$$(subst /,_,$$*).d
 $(DEPDIR)/%.d: ;
 
 -include $(patsubst %,$(DEPDIR)/$(subst /,_,$*).d,$(SRCS))
+endif
+
+# Targets if make is called like: 'make <target>'
+ifeq ($(words $(MAKECMDGOALS)), 1)
+###############################################################################
+# Variables                                                                   #
+###############################################################################
+# Variables for google test compilation
+GMOCK_DIR := $(ROOT_DIR)/vendors/googletest/googlemock
+GTEST_DIR := $(GMOCK_DIR)/../googletest
+GTEST_CXX := g++ -isystem $(GTEST_DIR)/include \
+            -isystem $(GMOCK_DIR)/include -pthread
+GMOCK_OBJECTS := $(GTEST_DIR)/make/gtest-all.o $(GMOCK_DIR)/make/gmock-all.o $(GMOCK_DIR)/make/gmock_main.o
+###############################################################################
+# Configuration                                                               #
+###############################################################################
+.PHONY: init init-submodules gmocklib
+
+###############################################################################
+# Targets                                                                     #
+###############################################################################
+init: gmocklib
+
+init-submodules:
+	@echo "Init submodules.."
+	@git submodule update --init --recursive
+
+gmocklib: init-submodules $(GMOCK_OBJECTS)
+	@echo "Bundle to library..."
+	@mkdir -p $(dir $(GMOCK_LIB))
+	@ar -rv $(GMOCK_LIB) $(GMOCK_OBJECTS)
+
+$(GMOCK_OBJECTS):
+	@echo "Compiling " $(notdir $@) "..."
+	$(MAKE) -C $(dir $@)
 endif
