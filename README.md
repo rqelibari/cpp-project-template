@@ -13,7 +13,7 @@ this Makefile will delegate targets of the format
 > Notice: This Makefile is most util when used with the standard folder
   structure.
 
-[1]: https://github.com/rqelibari/cpp-project-template/blob/master/Makefile#L18-L23
+[1]: https://github.com/rqelibari/cpp-project-template/blob/master/Makefile#L82-L100
 
 The following targets are offered:
 
@@ -32,8 +32,9 @@ The following targets are offered:
 
 ```
 > cd REPO_DIR
+> git init
 > make init
 ```
 
 **Alternatively**: You can add this repo as a submodule to your existing
-repository.
+repository and than symlink the toplevel Makefile to this one.
