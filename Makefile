@@ -35,7 +35,6 @@ SHELL = /bin/sh
 # Get the directory, where this makefile is located
 ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 DEBUG := yes
-export GMOCK_LIB = $(ROOT_DIR)/lib/libgmock.a
 
 # >> Compiler variables
 #######################################
@@ -48,10 +47,20 @@ endif
 
 COMPILECPP = $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(TARGET_ARCH)
 
+# >> Googletest variables
+#######################################
+GMOCK_DIR := $(ROOT_DIR)/vendors/googletest/googlemock
+GTEST_DIR := $(GMOCK_DIR)/../googletest
+export GTEST_CXX := $(COMPILECPP) -isystem $(GTEST_DIR)/include \
+                    -isystem $(GMOCK_DIR)/include
+GMOCK_OBJECTS := $(GTEST_DIR)/make/gtest-all.o $(GMOCK_DIR)/make/gmock-all.o $(GMOCK_DIR)/make/gmock_main.o
+export GMOCK_LIB = $(ROOT_DIR)/lib/libgmock.a
+
 ###############################################################################
 # Default configuration                                                       #
 ###############################################################################
 MAKEFLAGS += --no-builtin-rules
+.SUFFIXES:
 .SUFFIXES: .o .cpp
 .ONESHELL:
 
@@ -108,20 +117,21 @@ POSTCOMPILE = mv -f $(DEPDIR)/$(subst /,_,$*).Td $(DEPDIR)/$(subst /,_,$*).d
 # Define template variables for using as prerequisites to targets:
 # 1. Get main files as those will produce a binary later
 MAIN_BINARIES := $(subst $(SRC_DIR),$(BIN_DIR),$(basename $(wildcard $(SRC_DIR)/*Main.cpp)))
+TESTS_BINARIES := $(subst $(TESTS_DIR),$(BIN_DIR),$(basename $(wildcard $(TESTS_DIR)/*Test.cpp)))
 SRCS := $(basename $(filter-out %Main.cpp, $(wildcard $(SRC_DIR)/*.cpp)))
 OBJS := $(addsuffix .o,$(subst $(SRC_DIR),$(BUILD_DIR),$(SRCS)))
 
 ###############################################################################
 # Configuration                                                               #
 ###############################################################################
-.PRECIOUS: $(DEPDIR)/%.d $(BUILD_DIR)/%.o
+.PRECIOUS: $(DEPDIR)/%.d $(BUILD_DIR)/%.o $(BUILD_DIR)/%Test.o
 .PHONY: $(PROJECT) sbuild sclean
 .SECONDEXPANSION:
 
 ###############################################################################
 # Targets                                                                     #
 ###############################################################################
-ifeq ($(filter sbuild sclean, $(CMD)),)
+ifeq ($(filter sbuild sclean stest, $(CMD)),)
 ifneq ($(PROJECT_MAKEFILE),)
 $(PROJECT):
 	@echo "Delegating to project Makefile."
@@ -135,9 +145,11 @@ $(PROJECT):
 	@echo "Calling standard targets."
 endif
 
-# >> Standard clean target
+# >> Standard targets
 #######################################
 sbuild: $(MAIN_BINARIES)
+stest: $(TESTS_BINARIES)
+	@for T in $(TEST_BINARIES); do ./$$T; done
 
 # >> Standard clean target
 #######################################
@@ -156,6 +168,15 @@ $(BIN_DIR)/%Main: $(BUILD_DIR)/%Main.o $(OBJS)
 	@echo "Linking binary: " $@
 	@$(COMPILECPP) -o $@ $^
 
+$(BIN_DIR)/%Test: $(BUILD_DIR)/%Test.o $$(filter $(BUILD_DIR)/$$*.o, $(OBJS))
+	@echo "Linking test binary: " $@
+	@$(GTEST_CXX) -lpthread -o $@ $^ $(GMOCK_LIB)
+
+$(BUILD_DIR)/%Test.o: $(TESTS_DIR)/%Test.cpp $(DEPDIR)/$$(subst /,_,$$*).d
+	@echo ">> Compiling test binary " $<
+	@$(GTEST_CXX) -c -o $@ $(DEPFLAGS) $<
+	@$(POSTCOMPILE)
+
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(DEPDIR)/$$(subst /,_,$$*).d
 	@echo ">> Compiling " $<
 	@$(COMPILECPP) -c -o $@ $(DEPFLAGS) $<
@@ -168,15 +189,6 @@ endif
 
 # Targets if make is called like: 'make <target>'
 ifeq ($(words $(MAKECMDGOALS)), 1)
-###############################################################################
-# Variables                                                                   #
-###############################################################################
-# Variables for google test compilation
-GMOCK_DIR := $(ROOT_DIR)/vendors/googletest/googlemock
-GTEST_DIR := $(GMOCK_DIR)/../googletest
-GTEST_CXX := g++ -isystem $(GTEST_DIR)/include \
-            -isystem $(GMOCK_DIR)/include -pthread
-GMOCK_OBJECTS := $(GTEST_DIR)/make/gtest-all.o $(GMOCK_DIR)/make/gmock-all.o $(GMOCK_DIR)/make/gmock_main.o
 ###############################################################################
 # Configuration                                                               #
 ###############################################################################
