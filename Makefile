@@ -31,6 +31,7 @@
 # Set variable according to:
 # https://www.gnu.org/software/make/manual/html_node/Makefile-Basics.html
 SHELL = /bin/sh
+.SHELLFLAGS = -e
 # Get the directory, where this makefile is located
 ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 DEBUG := yes
@@ -108,6 +109,7 @@ MAKEFLAGS += --no-builtin-rules
 .PRECIOUS: $(DEPDIR)/%.d $(BUILD_DIR)/%.o
 .PHONY: $(PROJECT) sbuild sclean
 .SECONDEXPANSION:
+.ONESHELL:
 
 ###############################################################################
 # Targets                                                                     #
