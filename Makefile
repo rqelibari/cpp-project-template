@@ -236,7 +236,7 @@ add-submodule:
 	@echo "Add goolge/googletest as submodule"
 	@mkdir -p $(VENDOR_DIR)
 	@[ ! -d ".git" ] && git init || true
-	@[ ! -d "$(GMOCK_REPO_DIR)" ] && git submodule add $(GMOCK_REPO) "$(subst $(CURDIR)/,,$(GMOCK_REPO_DIR))" || true
+	@[ ! -d "$(GMOCK_REPO_DIR)" ] && git submodule add $(GMOCK_REPO) "$(subst $(ROOT_DIR)/,,$(GMOCK_REPO_DIR))" || true
 
 init-submodules: add-submodule
 	@echo "Init submodules.."
