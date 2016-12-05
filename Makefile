@@ -32,8 +32,9 @@
 # https://www.gnu.org/software/make/manual/html_node/Makefile-Basics.html
 SHELL = /bin/zsh
 .SHELLFLAGS = -e
-# Get the directory, where this makefile is located
-ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+# Get root directory. When in git submodule get root git repository
+GIT_GET_ROOT = git rev-parse --show-toplevel
+ROOT_DIR := $(shell while [ $$($(GIT_GET_ROOT) 2> /dev/null) ]; do LASTDIR=$$($(GIT_GET_ROOT)); cd "$${LASTDIR}/.."; done; cd $${LASTDIR:=.}; echo $$(pwd))
 DEBUG := yes
 
 # >> Compiler variables
