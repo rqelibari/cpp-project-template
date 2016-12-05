@@ -62,7 +62,8 @@ export GMOCK_LIB = $(ROOT_DIR)/lib/libgmock.a
 
 # >> Stylecheck variables
 #######################################
-CPPLINT_REPO = "https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py"
+CPPLINT_REPO = "https://github.com/google/styleguide.git"
+CPPLINT_REPO_DIR := $(VENDOR_DIR)/google-styleguides
 CPPLINT = $(ROOT_DIR)/cpplint.py
 
 ###############################################################################
@@ -220,22 +221,24 @@ ifeq ($(words $(MAKECMDGOALS)), 1)
 ###############################################################################
 # Configuration                                                               #
 ###############################################################################
-.PHONY: init add-submodule init-submodules gmocklib
+.PHONY: init cpplint add-submodule init-submodules gmocklib
 
 ###############################################################################
 # Targets                                                                     #
 ###############################################################################
-init: gmocklib
+init: gmocklib cpplint
 
-cpplint: cpplint.py
-cpplint.py:
-	@echo "Get cpplint.py"
-	@curl -o $(CPPLINT) $(CPPLINT_REPO)
+cpplint: init-submodules
+	@echo "Link cpplint.py"
+	@ln -s "$(subst $(ROOT_DIR)/,,$(CPPLINT_REPO_DIR))/cpplint/cpplint.py" "$(CPPLINT)"
 
 add-submodule:
-	@echo "Add goolge/googletest as submodule"
-	@mkdir -p $(VENDOR_DIR)
 	@[ ! -d ".git" ] && git init || true
+	@echo "Add vendor dir if not exists"
+	@mkdir -p $(VENDOR_DIR)
+	@echo "Add google styleguides as submodule if not already done"
+	@[ ! -d "$(CPPLINT_REPO_DIR)" ] && git submodule add $(CPPLINT_REPO) "$(subst $(ROOT_DIR)/,,$(CPPLINT_REPO_DIR))" || true
+	@echo "Add goolge/googletest as submodule if not already done"
 	@[ ! -d "$(GMOCK_REPO_DIR)" ] && git submodule add $(GMOCK_REPO) "$(subst $(ROOT_DIR)/,,$(GMOCK_REPO_DIR))" || true
 
 init-submodules: add-submodule
