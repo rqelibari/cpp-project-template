@@ -33,7 +33,6 @@
 SHELL = /bin/zsh
 .SHELLFLAGS = -e
 # Get root directory. When in git submodule get root git repository
-GIT_GET_ROOT = git rev-parse --show-toplevel
 ROOT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 DEBUG := yes
 
