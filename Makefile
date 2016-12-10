@@ -1,4 +1,4 @@
-#  Fuzzy Search - Main GNUMake file
+#  C++ Project Template - Main GNUMake file
 #  ====
 #  Copyright 2016 Rezart Qelibari <rezart.q-github@gmail.com>
 #
@@ -34,7 +34,7 @@ SHELL = /bin/zsh
 .SHELLFLAGS = -e
 # Get root directory. When in git submodule get root git repository
 GIT_GET_ROOT = git rev-parse --show-toplevel
-ROOT_DIR := $(shell while [ $$($(GIT_GET_ROOT) 2> /dev/null) ]; do LASTDIR=$$($(GIT_GET_ROOT)); cd "$${LASTDIR}/.."; done; cd $${LASTDIR:=.}; echo $$(pwd))
+ROOT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 DEBUG := yes
 
 # >> Compiler variables
