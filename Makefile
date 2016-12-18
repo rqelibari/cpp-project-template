@@ -18,12 +18,17 @@
 # Idea                                                                        #
 ###############################################################################
 # This makefile is the entry point for all sub projects makefile. It
-# provides the tasks which are required by all subprojects (e.g. building)
-# googlemock. It further has a target which offers a build of the sub
-# projects, but depends on naming conventions.
+# provides the tasks which are required by all subprojects.
+# It further has a target which offers a "standard way" to build the sub
+# projects, if they obey the naming convention.
+#
+# #How to call?
+# This Makefile offers two schemes of calling:
+# 1. $ make target
+# 
 
 ###############################################################################
-# Default variables                                                           #
+# Variables                                                                   #
 ###############################################################################
 # Info: ':=' means expand variables on definition
 # >> General variables
@@ -32,8 +37,10 @@
 # https://www.gnu.org/software/make/manual/html_node/Makefile-Basics.html
 SHELL = /bin/zsh
 .SHELLFLAGS = -e
-# Get root directory. When in git submodule get root git repository
+# Get root directory.
 ROOT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+VENDOR_DIR := $(ROOT_DIR)/vendors
+MAKFILES_DIR := $(ROOT_DIR)/Makefiles
 DEBUG := yes
 
 # >> Compiler variables
@@ -47,24 +54,6 @@ endif
 
 COMPILECPP = $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(TARGET_ARCH)
 
-# >> Googletest variables
-#######################################
-VENDOR_DIR := $(ROOT_DIR)/vendors
-GMOCK_REPO = https://github.com/google/googletest.git
-GMOCK_REPO_DIR := $(VENDOR_DIR)/googletest
-GMOCK_DIR := $(GMOCK_REPO_DIR)/googlemock
-GTEST_DIR := $(GMOCK_DIR)/../googletest
-export GTEST_CXX := $(COMPILECPP) -isystem $(GTEST_DIR)/include \
-                    -isystem $(GMOCK_DIR)/include
-GMOCK_OBJECTS := $(GTEST_DIR)/make/gtest-all.o $(GMOCK_DIR)/make/gmock-all.o $(GMOCK_DIR)/make/gmock_main.o
-export GMOCK_LIB = $(ROOT_DIR)/lib/libgmock.a
-
-# >> Stylecheck variables
-#######################################
-CPPLINT_REPO = "https://github.com/google/styleguide.git"
-CPPLINT_REPO_DIR := $(VENDOR_DIR)/google-styleguides
-CPPLINT = $(ROOT_DIR)/cpplint.py
-
 ###############################################################################
 # Default configuration                                                       #
 ###############################################################################
@@ -74,7 +63,7 @@ MAKEFLAGS += --no-builtin-rules
 .ONESHELL:
 
 # Define those variables only when invocation on command line looks like:
-# > make project sb
+# > make <project> <target>
 ifeq ($(words $(MAKECMDGOALS)), 2)
 PROJECT := $(firstword $(MAKECMDGOALS))
 PROJECT_MAKEFILE := $(wildcard $(PROJECT)/Makefile)
@@ -87,8 +76,11 @@ CMD = $(lastword $(MAKECMDGOALS))
 #
 # .
 # ├── LICENSE
-# ├── Makefile  # -> this is the current makefile
+# ├── Makefile  # -> this is the main Makefile
 # ├── README.md
+# ├── Makefiles  # -> Makefiles to include in main Makefile.
+#     ├── Gtest.make    # -> Makefile with targets related to gtest
+#     └── Cpplint.make  # -> Makefile related to cpplint.py
 # └── project1  # -> a project
 #     ├── Makefile    # -> this is a project specific Makefile
 #     ├── .d    # -> automatic generated dependency files
@@ -101,8 +93,8 @@ CMD = $(lastword $(MAKECMDGOALS))
 #     │   └── FuzzyFileSearchMain.cpp  # -> files ending with Main.cpp will
 #     │                                # later produce an executable
 #     └── tests # -> here you can your tests
-#         └── FuzzyFileSearch.cpp      #  -> This file contains a googlemock
-#									   # test suite. It will be linked with
+#         └── FuzzyFileSearch.cpp      #  -> This file contains a test suite.
+#									   # It will be linked with
 #                                      # src/FuzzySearch.cpp
 #
 BIN_DIR = $(PROJECT)/bin
@@ -126,12 +118,9 @@ POSTCOMPILE = mv -f $(DEPDIR)/$(@F).Td $(DEPDIR)/$(@F).d
 # Define template variables for using as prerequisites to targets:
 # 1. Get main files as those will produce a binary later
 MAIN_BINARIES := $(subst $(SRC_DIR),$(BIN_DIR),$(basename $(wildcard $(SRC_DIR)/*Main.cpp)))
-TESTS_BINARIES := $(subst $(TESTS_DIR),$(BIN_DIR),$(basename $(wildcard $(TESTS_DIR)/*Test.cpp)))
 SRCS := $(basename $(filter-out %Main.cpp, $(wildcard $(SRC_DIR)/*.cpp)))
 OBJS := $(addsuffix .o,$(subst $(SRC_DIR),$(BUILD_DIR),$(SRCS)))
 DEPFILES := $(wildcard $(DEPDIR)/*.d)
-# File to run checkstlye on. (N) to allow nullglobing.
-CHECKSTYLE_FILES = $(SRC_DIR)/*.h(N) $(SRC_DIR)/*.cpp(N) $(TESTS_DIR)/*.cpp(N)
 
 ###############################################################################
 # Configuration                                                               #
@@ -171,12 +160,6 @@ screate:
 	@mkdir -p $(TESTS_DIR)
 
 sbuild: $(MAIN_BINARIES)
-stest: $(TESTS_BINARIES)
-	@for T in $(TEST_BINARIES); do ./$$T; done
-
-scheckstyle:
-	@echo "Run checkstyle..."$$'\n'
-	@python $(CPPLINT) --filter='-build/header_guard,-build/include' $(CHECKSTYLE_FILES)
 
 
 # >> Standard clean target
@@ -196,15 +179,6 @@ $(BIN_DIR)/%Main: $(BUILD_DIR)/%Main.o $(OBJS)
 	@echo "Linking binary: " $@
 	@$(COMPILECPP) -o $@ $^
 
-$(BIN_DIR)/%Test: $(BUILD_DIR)/%Test.o $$(filter $(BUILD_DIR)/$$*.o, $(OBJS))
-	@echo "Linking test binary: " $@
-	@$(GTEST_CXX) -lpthread -o $@ $^ $(GMOCK_LIB)
-
-$(BUILD_DIR)/%Test.o: $(TESTS_DIR)/%Test.cpp
-	@echo ">> Compiling test binary " $<
-	@$(GTEST_CXX) -c -o $@ $(DEPFLAGS) $<
-	@$(POSTCOMPILE)
-
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(DEPDIR)/$$(@F)).d
 	@echo ">> Compiling " $<
 	@$(COMPILECPP) -c -o $@ $(DEPFLAGS) $<
@@ -215,8 +189,6 @@ $(DEPDIR)/%.d: ;
 -include $(DEPFILES)
 endif
 
-# Targets if make is called like: 'make <target>'
-ifeq ($(words $(MAKECMDGOALS)), 1)
 ###############################################################################
 # Configuration                                                               #
 ###############################################################################
@@ -243,15 +215,3 @@ add-submodule:
 init-submodules: add-submodule
 	@echo "Init submodules.."
 	@git submodule update --init --recursive
-
-gmocklib: init-submodules $(GMOCK_OBJECTS)
-	@echo "Bundle to library..."
-	@mkdir -p $(dir $(GMOCK_LIB))
-	@ar -rv $(GMOCK_LIB) $(GMOCK_OBJECTS)
-	@$(MAKE) -C $(GMOCK_DIR)/make clean
-	@$(MAKE) -C $(GTEST_DIR)/make clean
-
-$(GMOCK_OBJECTS):
-	@echo "Compiling " $(notdir $@) "..."
-	$(MAKE) -C $(dir $@)
-endif
