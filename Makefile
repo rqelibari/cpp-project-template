@@ -43,9 +43,51 @@
 #######################################
 DEBUG = yes
 
+# >> Folder variables
+#######################################
+# The following folder structure is assumed.
+#
+# ROOT_DIR
+# ├── LICENSE
+# ├── Makefile  # -> this is the main Makefile
+# ├── README.md
+# ├── Makefiles  # -> Makefiles to include in main Makefile.
+# │   ├── Gtest.make    # -> Makefile with targets related to gtest
+# │   └── Cpplint.make  # -> Makefile related to cpplint.py
+# ├── project1  # -> one project
+# └── project2  # -> another project
+#
+ROOT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+VENDOR_DIR := $(ROOT_DIR)/vendors
+GLIB_DIR := $(ROOT_DIR)/lib
+MAKFILES_DIR := $(ROOT_DIR)/Makefiles
+
 # >> Internal config variables/targets
 #######################################
-SUFFIXES = .o .cpp
-PRECIOUS = %.d %.o
-PHONY = create build clean checkstyle test clean-all
+# Set variable according to:
+# https://www.gnu.org/software/make/manual/html_node/Makefile-Basics.html
+SHELL = /bin/zsh
+.SHELLFLAGS = -e
 
+###############################################################################
+# Calling scheme selector                                                     #
+###############################################################################
+ifeq ($(words $(MAKECMDGOALS)), 2)
+# >> Calling scheme 2 or 3
+#######################################
+ARGZ = $(firstword $(MAKECMDGOALS))
+ARGO = $(lastword $(MAKECMDGOALS))
+IS_ARGZ_FOLDER = $(wildcard $(ARGZ))
+IS_ARGO_FOLDER = $(wildcard $(ARGO))
+endif
+
+ifneq (,$(IS_ARGZ_FOLDER))
+# >> Calling scheme 3
+#######################################
+else (,$(IS_ARGO_FOLDER))
+# >> Calling scheme 2
+#######################################
+else
+# >> Calling scheme 1
+#######################################
+endif
