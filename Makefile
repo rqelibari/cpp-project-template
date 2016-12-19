@@ -68,6 +68,7 @@ MAKFILES_DIR := $(ROOT_DIR)/Makefiles
 # https://www.gnu.org/software/make/manual/html_node/Makefile-Basics.html
 SHELL = /bin/zsh
 .SHELLFLAGS = -e
+.SECONDEXPANSION:
 
 ###############################################################################
 # Calling scheme selector                                                     #
@@ -84,13 +85,18 @@ endif
 ifneq (,$(IS_ARGZ_FOLDER))
 # >> Calling scheme 3
 #######################################
--include $(wildcard $(MAKFILES_DIR)/*3.make)
+# ARGZ = Project name; ARGO = target to call;
+all:
+	$(MAKE) -C $(ARGZ) $(ARGO)
+
 else (,$(IS_ARGO_FOLDER))
 # >> Calling scheme 2
 #######################################
 -include $(wildcard $(MAKFILES_DIR)/*2.make)
+
 else
 # >> Calling scheme 1
 #######################################
+init: $$(init_preq)
 -include $(wildcard $(MAKFILES_DIR)/*1.make)
 endif
