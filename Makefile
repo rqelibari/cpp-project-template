@@ -41,7 +41,7 @@
 # Info: ':=' means expand variables on definition
 # >> General variables
 #######################################
-DEBUG = yes
+DEBUG := yes
 
 # >> Folder variables
 #######################################
@@ -66,8 +66,8 @@ MAKFILES_DIR := $(ROOT_DIR)/Makefiles
 #######################################
 # Set variable according to:
 # https://www.gnu.org/software/make/manual/html_node/Makefile-Basics.html
-SHELL = /bin/zsh
-.SHELLFLAGS = -e
+SHELL := /bin/zsh
+.SHELLFLAGS := -e
 .SECONDEXPANSION:
 
 ###############################################################################
@@ -76,10 +76,10 @@ SHELL = /bin/zsh
 ifeq ($(words $(MAKECMDGOALS)), 2)
 # >> Calling scheme 2 or 3
 #######################################
-ARGZ = $(firstword $(MAKECMDGOALS))
-ARGO = $(lastword $(MAKECMDGOALS))
-IS_ARGZ_FOLDER = $(wildcard $(ARGZ))
-IS_ARGO_FOLDER = $(wildcard $(ARGO))
+ARGZ := $(firstword $(MAKECMDGOALS))
+ARGO := $(lastword $(MAKECMDGOALS))
+IS_ARGZ_FOLDER := $(wildcard $(ARGZ))
+IS_ARGO_FOLDER := $(wildcard $(ARGO))
 endif
 
 ifneq (,$(IS_ARGZ_FOLDER))
@@ -99,4 +99,5 @@ else
 #######################################
 init: $$(init_preq)
 -include $(wildcard $(MAKFILES_DIR)/*1.make)
+.PHONY: $(phony)
 endif
