@@ -84,10 +84,13 @@ endif
 ifneq (,$(IS_ARGZ_FOLDER))
 # >> Calling scheme 3
 #######################################
+-include $(wildcard $(MAKFILES_DIR)/*3.make)
 else (,$(IS_ARGO_FOLDER))
 # >> Calling scheme 2
 #######################################
+-include $(wildcard $(MAKFILES_DIR)/*2.make)
 else
 # >> Calling scheme 1
 #######################################
+-include $(wildcard $(MAKFILES_DIR)/*1.make)
 endif
