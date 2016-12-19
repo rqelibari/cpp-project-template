@@ -79,8 +79,8 @@ CMD = $(lastword $(MAKECMDGOALS))
 # ├── Makefile  # -> this is the main Makefile
 # ├── README.md
 # ├── Makefiles  # -> Makefiles to include in main Makefile.
-#     ├── Gtest.make    # -> Makefile with targets related to gtest
-#     └── Cpplint.make  # -> Makefile related to cpplint.py
+# │   ├── Gtest.make    # -> Makefile with targets related to gtest
+# │   └── Cpplint.make  # -> Makefile related to cpplint.py
 # └── project1  # -> a project
 #     ├── Makefile    # -> this is a project specific Makefile
 #     ├── .d    # -> automatic generated dependency files
