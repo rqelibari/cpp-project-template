@@ -14,24 +14,33 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+# IMPORTANT: This file is meant to be included into the main file!
+
+# Add prerequisit to init
+INIT_PREQ += cpplint
 
 ###############################################################################
 # Variables                                                                   #
 ###############################################################################
 # >> Stylecheck variables
 #######################################
-CPPLINT_REPO = "https://github.com/google/styleguide.git"
-CPPLINT_REPO_DIR := $(VENDOR_DIR)/google-styleguides
-CPPLINT = $(ROOT_DIR)/cpplint.py
-
-# >> Template variables
-#######################################
-# File to run checkstlye on. (N) to allow nullglobing.
-CHECKSTYLE_FILES = $(SRC_DIR)/*.h(N) $(SRC_DIR)/*.cpp(N) $(TESTS_DIR)/*.cpp(N)
+# CPPLINT_REPO = "https://github.com/google/styleguide.git"
+CPPLINT_REPO = "https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py"
+CPPLINT_DIR := $(VENDOR_DIR)/google-styleguides
+CPPLINT := $(CPPLINT_DIR)/cpplint.py
+CPPLINT_CONFIG := $(ROOT_DIR)/CPPLINT.cfg
+LINT := $(CPPLINT)
 
 ###############################################################################
 # Targets                                                                     #
 ###############################################################################
-scheckstyle:
-	@echo "Run checkstyle..."$$'\n'
-	@python $(CPPLINT) --filter='-build/header_guard,-build/include' $(CHECKSTYLE_FILES)
+cpplint: cpplint.py
+	@echo "Create config file..."
+	@echo "filter=-build/header_guard,-build/include" > $(CPPLINT_CONFIG)
+
+cpplint.py:
+	@echo "Get cpplint.py"
+	-@[ ! -d "$(CPPLINT_DIR)" ] && echo "...creating cpplint dir..."
+	-@mkdir -p $(CPPLINT_DIR)
+	@echo "Downloading cpplint.py"
+	-@curl -o $(CPPLINT) $(CPPLINT_REPO)

@@ -1,4 +1,4 @@
-#  C++ Project Template - GNUMake Makefile for googletest
+#  C++ Project Template - GNUMake Makefile (1) for googletest
 #  ====
 #  Copyright 2016 Rezart Qelibari <rezart.q-github@gmail.com>
 #
@@ -14,55 +14,37 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+# IMPORTANT: This file is meant to be included into the main file!
 
-ifdef VENDOR_DIR
-ifdef COMPILECPP
-ifdef ROOT_DIR
+# Add prerequisit to init
+INIT_PREQ += gmocklib
 
 ###############################################################################
-# Default variables                                                           #
+# Variables                                                                   #
 ###############################################################################
-
-# >> Googletest variables
-#######################################
-GMOCK_REPO = https://github.com/google/googletest.git
-GMOCK_REPO_DIR := $(VENDOR_DIR)/googletest
-GMOCK_DIR := $(GMOCK_REPO_DIR)/googlemock
-GTEST_DIR := $(GMOCK_DIR)/../googletest
-export GTEST_CXX := $(COMPILECPP) -isystem $(GTEST_DIR)/include \
-                    -isystem $(GMOCK_DIR)/include
-GMOCK_OBJECTS := $(GTEST_DIR)/make/gtest-all.o $(GMOCK_DIR)/make/gmock-all.o $(GMOCK_DIR)/make/gmock_main.o
-export GMOCK_LIB = $(ROOT_DIR)/lib/libgmock.a
-
-# >> Template variables
-#######################################
-TESTS_BINARIES := $(subst $(TESTS_DIR),$(BIN_DIR),$(basename $(wildcard $(TESTS_DIR)/*Test.cpp)))
+GMOCK_REPO := https://github.com/google/googletest.git
+GMOCK_OBJECTS := $(GTEST_DIR)/make/gtest-all.o \
+                 $(GMOCK_DIR)/make/gmock-all.o \
+                 $(GMOCK_DIR)/make/gmock_main.o
 
 ###############################################################################
 # Targets                                                                     #
 ###############################################################################
-# >> Standard build targets
-#######################################
-stest: $(TESTS_BINARIES)
-	@for T in $(TEST_BINARIES); do ./$$T; done
-
-$(BIN_DIR)/%Test: $(BUILD_DIR)/%Test.o $$(filter $(BUILD_DIR)/$$*.o, $(OBJS))
-	@echo "Linking test binary: " $@
-	@$(GTEST_CXX) -lpthread -o $@ $^ $(GMOCK_LIB)
-
-$(BUILD_DIR)/%Test.o: $(TESTS_DIR)/%Test.cpp
-	@echo ">> Compiling test binary " $<
-	@$(GTEST_CXX) -c -o $@ $(DEPFLAGS) $<
-	@$(POSTCOMPILE)
-
+PHONY_TARGETS += gmocklib add-gmock-submodule $(GMOCK_OBJECTS)
 # >> Build googlemock
 #######################################
-gmocklib: init-submodules $(GMOCK_OBJECTS)
+gmocklib: add-gmock-submodule $(GMOCK_OBJECTS)
 	@echo "Bundle to library..."
 	@mkdir -p $(dir $(GMOCK_LIB))
 	@ar -rv $(GMOCK_LIB) $(GMOCK_OBJECTS)
-	@$(MAKE) -C $(GMOCK_DIR)/make clean
-	@$(MAKE) -C $(GTEST_DIR)/make clean
+
+add-gmock-submodule:
+	@echo "Add goolge/googletest as submodule if not already done..."
+	@[ ! -d "$(GMOCK_REPO_DIR)" ] && git submodule add $(GMOCK_REPO) "$(subst $(ROOT_DIR)/,,$(GMOCK_REPO_DIR))" || true
+	@echo "...done."
+	@echo "Init gmock submodule..."
+	@git submodule update --init --recursive
+	@echo "...done."
 
 $(GMOCK_OBJECTS):
 	@echo "Compiling " $(notdir $@) "..."

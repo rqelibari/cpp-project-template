@@ -58,8 +58,9 @@ DEBUG := yes
 # └── project2  # -> another project
 #
 ROOT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+PROJECTS_DIR := $(ROOT_DIR)
 VENDOR_DIR := $(ROOT_DIR)/vendors
-GLIB_DIR := $(ROOT_DIR)/lib
+GLOBAL_LIB_DIR := $(ROOT_DIR)/lib
 MAKFILES_DIR := $(ROOT_DIR)/Makefiles
 
 # >> Internal config variables/targets
@@ -68,11 +69,17 @@ MAKFILES_DIR := $(ROOT_DIR)/Makefiles
 # https://www.gnu.org/software/make/manual/html_node/Makefile-Basics.html
 SHELL := /bin/zsh
 .SHELLFLAGS := -e
+.ONESHELL:
 .SECONDEXPANSION:
+
+# >> 0, to share common variables accross calling schemes.
+#######################################
+-include $(wildcard $(MAKFILES_DIR)/*0.make)
 
 ###############################################################################
 # Calling scheme selector                                                     #
 ###############################################################################
+
 ifeq ($(words $(MAKECMDGOALS)), 2)
 # >> Calling scheme 2 or 3
 #######################################
@@ -82,22 +89,45 @@ IS_ARGZ_FOLDER := $(wildcard $(ARGZ))
 IS_ARGO_FOLDER := $(wildcard $(ARGO))
 endif
 
-ifneq (,$(IS_ARGZ_FOLDER))
+ifdef IS_ARGZ_FOLDER
 # >> Calling scheme 3
 #######################################
 # ARGZ = Project name; ARGO = target to call;
-all:
-	$(MAKE) -C $(ARGZ) $(ARGO)
+PHONY_TARGETS += all $(ARGZ) $(ARGO)
+all: ; $(MAKE) -C $(MAKECMDGOALS)
+$(ARGZ): all
+$(ARGO):
 
-else (,$(IS_ARGO_FOLDER))
+else ifdef IS_ARGO_FOLDER
 # >> Calling scheme 2
 #######################################
+PROJECT = $(ARGO)
+ARG := $(ARGZ)
 -include $(wildcard $(MAKFILES_DIR)/*2.make)
 
 else
 # >> Calling scheme 1
 #######################################
-init: $$(init_preq)
+PHONY_TARGETS := usage init ensure-root-folders ensure-git
+usage:
+	@echo "Usage: make <command|project> [<command|project>]"
+init: ensure-root-folders ensure-git $$(INIT_PREQ)
+ensure-root-folders:
+	@echo "Ensure root folders exist..."
+	-@[ ! -d "$(VENDOR_DIR)" ] && echo "...creating vendor dir..."
+	-@mkdir -p $(VENDOR_DIR)
+	-@[ ! -d "$(GLOBAL_LIB_DIR)" ] && echo "...creating global lib dir..."
+	-@mkdir -p $(GLOBAL_LIB_DIR)
+	@echo "...done."
+ensure-git:
+	@echo "Ensure the root folder is a git directory..."
+	-@[ ! -d "$(ROOT_DIR)/.git" ] && git init $(ROOT_DIR) || true
+	@echo "..done."
 -include $(wildcard $(MAKFILES_DIR)/*1.make)
-.PHONY: $(phony)
 endif
+
+MAKEFLAGS += --no-builtin-rules
+.SUFFIXES:
+.SUFFIXES: $(SUFFIXES_PREQ)
+.PRECIOUS: $(PRECIOUS_PREQ)
+.PHONY: $(PHONY_TARGETS) $(PHONY_TARGETS_PREQ)
